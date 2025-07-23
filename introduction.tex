@@ -1,51 +1,214 @@
 \chapter{Introduction}
 
-\section{Contexte général}
+\section{Contexte et motivation}
 
-La modélisation de la volatilité constitue l'un des défis centraux de la finance quantitative moderne. Depuis les travaux fondateurs de Black, Scholes et Merton dans les années 1970, la compréhension et la modélisation du comportement stochastique des prix d'actifs financiers ont connu des développements considérables. L'observation empirique que la volatilité des actifs financiers n'est pas constante, contrairement aux hypothèses du modèle de Black-Scholes, a conduit au développement de modèles de volatilité stochastique plus sophistiqués.
+La calibration des modèles de volatilité stochastique constitue l'un des défis techniques les plus complexes de la finance quantitative moderne. Dans un environnement de marché caractérisé par une volatilité croissante et des structures de données de plus en plus riches, les institutions financières font face à des exigences contradictoires : d'une part, la nécessité de calibrer des modèles sophistiqués avec une précision et une fréquence accrues, et d'autre part, les contraintes computationnelles qui limitent l'application pratique de ces approches avancées.
 
-Parmi ces modèles, le modèle de Heston, introduit par Steven Heston en 1993, occupe une position privilégiée dans l'industrie financière. Ce modèle à volatilité stochastique permet de capturer des phénomènes empiriques importants tels que l'effet de levier (correlation négative entre les rendements et la volatilité) et la persistance de la volatilité. Sa popularité provient notamment de l'existence d'une solution analytique fermée pour le pricing d'options européennes, ce qui en fait un outil pratique pour les praticiens.
+Le modèle de Heston \citep{heston1993closed}, introduit en 1993, demeure l'un des piliers de la modélisation de volatilité stochastique en finance quantitative. Sa popularité repose sur plusieurs caractéristiques remarquables : l'existence de solutions analytiques pour le pricing d'options européennes, sa capacité à reproduire le phénomène de smile de volatilité observé sur les marchés, et sa tractabilité mathématique qui permet l'implémentation de techniques de calibration robustes. Cependant, malgré ces avantages théoriques, la calibration pratique du modèle de Heston présente des défis computationnels significatifs qui limitent son utilisation en environnement de trading haute fréquence.
 
-Le processus de calibration des paramètres du modèle de Heston sur des données de marché constitue cependant un défi computationnel majeur. Les méthodes traditionnelles d'optimisation, qu'elles soient basées sur la maximisation de la vraisemblance ou la minimisation des écarts entre volatilités implicites observées et théoriques, nécessitent des ressources computationnelles importantes et souffrent de problèmes de convergence vers des optima locaux.
+L'émergence des options SPX Weekly, introduites par le Chicago Board Options Exchange (CBOE) en 2005 et devenues depuis l'un des produits dérivés les plus liquides au monde, a transformé le paysage de la gestion des risques et du trading d'options. Ces instruments, caractérisés par des maturités très courtes (typiquement 1 à 60 jours), présentent des défis uniques pour la calibration de modèles. La granularité temporelle fine requiert des recalibrations fréquentes, tandis que la liquidité élevée impose des contraintes de précision particulièrement strictes.
 
-\section{Problématique et motivation}
+Dans ce contexte, l'avènement du Deep Learning offre des perspectives révolutionnaires pour surmonter les limitations computationnelles traditionnelles. Les travaux pionniers de \citet{bayer2018deep} ont démontré qu'il est possible de remplacer les évaluations coûteuses de Monte Carlo par des approximations neuronales rapides et précises, ouvrant ainsi la voie à une nouvelle génération d'outils de calibration.
 
-La calibration du modèle de Heston présente plusieurs défis techniques et pratiques. Premièrement, la fonction objectif à optimiser est souvent non-convexe et multimodale, rendant l'optimisation sensible aux conditions initiales et susceptible de converger vers des minima locaux. Deuxièmement, chaque évaluation de la fonction objectif nécessite le calcul de multiples prix d'options via la formule analytique de Heston, ce qui devient coûteux lorsque l'on traite des surfaces de volatilité complètes avec de nombreux strikes et maturités.
+\section{Problématique et enjeux}
 
-Troisièmement, la nature dynamique des marchés financiers exige une recalibration fréquente des paramètres, parfois en temps réel pour certaines applications de trading algorithmique. Les méthodes d'optimisation classiques, bien qu'étant précises, ne répondent pas aux contraintes temporelles imposées par ces environnements.
+La problématique centrale de cette recherche s'articule autour d'une question fondamentale qui transcende les considérations purement techniques : \textbf{dans quelle mesure un réseau de Deep Learning peut-il remplacer ou accélérer la calibration traditionnelle du modèle de Heston sur des données réelles, tout en maintenant voire améliorant la précision et la robustesse requises pour les applications financières critiques ?}
 
-L'émergence du machine learning et en particulier du deep learning dans le domaine financier offre de nouvelles perspectives pour adresser ces défis. L'idée fondamentale consiste à entraîner un réseau de neurones pour apprendre la relation complexe entre les paramètres du modèle de Heston et les volatilités implicites résultantes. Une fois entraîné, ce réseau peut fournir des prédictions instantanées, transformant ainsi le problème de calibration en un problème d'inversion rapide.
+Cette question principale se décline en plusieurs sous-problématiques interdépendantes qui structurent notre approche de recherche :
 
-\section{Approche et contributions}
+\subsection{Enjeux computationnels}
 
-Ce mémoire explore l'application des techniques de deep learning à la calibration accélérée du modèle de Heston. Notre approche s'inspire des travaux récents de Bayer et Stemper (2018) sur la calibration profonde des modèles de volatilité rugueuse, que nous adaptons spécifiquement au contexte du modèle de Heston.
+Les méthodes traditionnelles de calibration du modèle de Heston reposent sur l'optimisation itérative de fonctions objectif complexes, nécessitant l'évaluation répétée de formules de pricing impliquant des intégrales de fonctions caractéristiques. Cette approche, bien qu'théoriquement solide, présente des limitations pratiques majeures :
 
-L'architecture proposée repose sur un réseau de neurones feed-forward dense qui apprend à mapper les caractéristiques de marché (moneyness, temps à maturité) et les paramètres du modèle vers les volatilités implicites correspondantes. Cette approche permet de contourner les calculs coûteux répétés de la formule analytique de Heston lors de la phase d'optimisation.
+\begin{itemize}
+\item \textbf{Complexité temporelle} : Chaque évaluation de la fonction objectif requiert le calcul de dizaines voire centaines de prix d'options, créant un goulot d'étranglement computationnel
+\item \textbf{Sensibilité aux conditions initiales} : Les algorithmes d'optimisation sont susceptibles de converger vers des minima locaux, nécessitant des stratégies d'initialisation sophistiquées
+\item \textbf{Stabilité numérique} : L'évaluation des fonctions caractéristiques peut présenter des instabilités numériques dans certaines régions de l'espace des paramètres
+\end{itemize}
 
-Nos principales contributions incluent la conception et l'implémentation d'une méthodologie complète de calibration accélérée, l'évaluation comparative des performances par rapport aux méthodes traditionnelles sur des données SPX réelles, et l'analyse des gains computationnels obtenus sans compromettre la précision de la calibration.
+Ces limitations deviennent particulièrement critiques dans le contexte des options SPX Weekly, où la nécessité de recalibrations fréquentes (potentiellement intra-day) rend les approches traditionnelles impraticables pour de nombreuses applications.
 
-\section{Données et validation empirique}
+\subsection{Enjeux de précision et robustesse}
 
-Pour valider notre approche, nous utilisons des données d'options sur l'indice S\&P 500 (SPX) avec des fréquences hebdomadaires. Ce choix est motivé par la liquidité importante de ces instruments et la richesse des surfaces de volatilité disponibles, permettant une évaluation robuste de notre méthodologie.
+Au-delà des considérations computationnelles, la question de la précision revêt une importance capitale en finance quantitative. Les erreurs de calibration se propagent directement dans les calculs de prix et de risques, avec des implications potentiellement significatives pour la rentabilité et la conformité réglementaire. Les défis spécifiques incluent :
 
-L'ensemble de données couvre plusieurs périodes de marché distinctes, incluant des phases de stabilité et de stress, afin de tester la robustesse de notre approche dans différents régimes de volatilité. Cette diversité est cruciale pour s'assurer que le modèle entraîné conserve ses performances prédictives dans diverses conditions de marché.
+\begin{itemize}
+\item \textbf{Précision des sensibilités} : Les grecques (Delta, Gamma, Vega, etc.) doivent être calculées avec une précision suffisante pour les besoins de couverture
+\item \textbf{Cohérence temporelle} : Les paramètres calibrés doivent présenter une stabilité temporelle raisonnable, évitant les variations erratiques qui compliquent la gestion des risques
+\item \textbf{Robustesse aux conditions extrêmes} : Le modèle doit maintenir sa précision même dans des conditions de marché volatiles ou exceptionnelles
+\end{itemize}
+
+\subsection{Enjeux réglementaires et opérationnels}
+
+L'adoption de techniques de Deep Learning dans les processus critiques de gestion des risques soulève des questions importantes concernant la validation réglementaire et l'acceptabilité opérationnelle :
+
+\begin{itemize}
+\item \textbf{Transparence et interprétabilité} : Les régulateurs financiers exigent de plus en plus de transparence dans les modèles de risque, créant une tension avec la nature "boîte noire" des réseaux de neurones
+\item \textbf{Validation et backtesting} : Les frameworks de validation doivent être adaptés pour accommoder les spécificités des modèles d'apprentissage automatique
+\item \textbf{Gouvernance des modèles} : Les processus de développement, validation et maintenance doivent évoluer pour intégrer les bonnes pratiques du Machine Learning
+\end{itemize}
+
+\section{Objectifs de la recherche}
+
+Cette recherche vise à apporter une contribution significative à la résolution des problématiques identifiées à travers plusieurs objectifs complémentaires et ambitieux.
+
+\subsection{Objectif principal}
+
+L'objectif principal consiste à \textbf{démontrer empiriquement la viabilité et la supériorité de l'approche de calibration par Deep Learning pour le modèle de Heston}, en s'appuyant sur une validation rigoureuse utilisant des données de marché réelles SPX Weekly. Cette démonstration doit couvrir l'ensemble des dimensions pertinentes : précision, vitesse, robustesse et applicabilité pratique.
+
+\subsection{Objectifs méthodologiques}
+
+Sur le plan méthodologique, cette recherche ambitionne de :
+
+\begin{enumerate}
+\item \textbf{Implémenter et valider} l'approche en deux étapes développée par \citet{bayer2018deep}, en l'adaptant spécifiquement aux caractéristiques des données SPX Weekly
+\item \textbf{Développer des métriques de performance} appropriées pour évaluer comparativement les approches traditionnelles et neuronales
+\item \textbf{Conduire une analyse de robustesse} exhaustive couvrant différents régimes de marché et conditions de volatilité
+\item \textbf{Établir des protocoles de validation} reproductibles et statistiquement rigoureux
+\end{enumerate}
+
+\subsection{Objectifs techniques}
+
+Du point de vue technique, les objectifs incluent :
+
+\begin{enumerate}
+\item \textbf{Optimisation de l'architecture neuronale} pour maximiser la précision tout en minimisant la complexité computationnelle
+\item \textbf{Développement d'algorithmes hybrides} combinant efficacement les techniques d'optimisation traditionnelles avec les approximations neuronales
+\item \textbf{Implémentation de techniques de régularisation} pour améliorer la généralisation et la stabilité des modèles
+\item \textbf{Création d'outils de diagnostic} pour monitorer et valider les performances en temps réel
+\end{enumerate}
+
+\subsection{Objectifs empiriques}
+
+L'évaluation empirique vise à :
+
+\begin{enumerate}
+\item \textbf{Quantifier précisément les gains de performance} en termes de vitesse et précision par rapport aux méthodes de référence
+\item \textbf{Analyser la stabilité temporelle} des paramètres calibrés à travers différentes conditions de marché
+\item \textbf{Évaluer la qualité des grecques} calculées via l'approche neuronale
+\item \textbf{Tester la robustesse} face aux variations de liquidité et aux événements de marché exceptionnels
+\end{enumerate}
+
+\section{Méthodologie et approche}
+
+Cette recherche adopte une méthodologie rigoureuse combinant développements théoriques, implémentation technique et validation empirique exhaustive.
+
+\subsection{Cadre théorique}
+
+Le cadre théorique s'appuie sur les travaux fondamentaux de \citet{bayer2018deep} et \citet{bayer2019deep}, tout en intégrant les développements récents en Differential Machine Learning \citep{huge2020differential} et en techniques de régularisation adaptées aux applications financières.
+
+L'approche retenue suit la méthodologie en deux étapes :
+
+\begin{enumerate}
+\item \textbf{Phase d'apprentissage} : Entraînement d'un réseau de neurones pour approximer la fonction de mapping des paramètres de Heston vers les volatilités implicites
+\item \textbf{Phase de calibration} : Utilisation de cette approximation neuronale dans un algorithme d'optimisation traditionnel (Levenberg-Marquardt) pour la calibration effective
+\end{enumerate}
+
+Cette approche présente l'avantage de préserver la robustesse des algorithmes d'optimisation établis tout en bénéficiant de l'efficacité computationnelle des réseaux de neurones.
+
+\subsection{Données et environnement expérimental}
+
+L'étude empirique s'appuie sur un dataset complet de prix d'options SPX Weekly couvrant la période 2020-2022, choisie pour sa richesse en termes de conditions de marché variées (incluant la crise COVID-19, la reprise économique et les tensions inflationnistes). Ce dataset comprend :
+
+\begin{itemize}
+\item Plus de 150,000 observations d'options avec maturités de 1 à 60 jours
+\item Couverture complète du spectre de moneyness [0.75, 1.25]
+\item Données de haute qualité avec filtrage rigoureux des observations aberrantes
+\item Métadonnées riches incluant les niveaux de VIX contemporains
+\end{itemize}
+
+L'environnement expérimental utilise des ressources de calcul haute performance (GPU NVIDIA Tesla V100) avec des frameworks de Deep Learning optimisés (PyTorch) pour assurer la reproductibilité et l'efficacité des expérimentations.
+
+\subsection{Métriques de performance}
+
+L'évaluation des performances s'appuie sur un ensemble complet de métriques couvrant les différentes dimensions d'intérêt :
+
+\begin{itemize}
+\item \textbf{Précision} : RMSE et MAE sur les volatilités implicites et les paramètres calibrés
+\item \textbf{Vitesse} : Temps d'exécution pour la calibration complète d'une surface de volatilité
+\item \textbf{Robustesse} : Taux de convergence et stabilité dans différentes conditions de marché
+\item \textbf{Qualité des sensibilités} : Précision des grecques calculées via différentiation automatique
+\end{itemize}
+
+\section{Contributions attendues}
+
+Cette recherche ambitionne d'apporter plusieurs contributions significatives à la littérature académique et à la pratique industrielle.
+
+\subsection{Contributions théoriques}
+
+Sur le plan théorique, les contributions incluent :
+
+\begin{itemize}
+\item \textbf{Validation empirique rigoureuse} de l'approche de Bayer et Stemper dans un contexte applicatif réaliste
+\item \textbf{Extension méthodologique} aux spécificités des options SPX Weekly
+\item \textbf{Analyse comparative exhaustive} avec les méthodes traditionnelles
+\item \textbf{Développement de frameworks de validation} adaptés aux modèles hybrides
+\end{itemize}
+
+\subsection{Contributions pratiques}
+
+Du point de vue pratique, cette recherche vise à :
+
+\begin{itemize}
+\item \textbf{Démontrer la faisabilité} de l'implémentation en environnement de production
+\item \textbf{Quantifier les bénéfices économiques} de l'adoption de ces techniques
+\item \textbf{Identifier les bonnes pratiques} pour l'implémentation et la maintenance
+\item \textbf{Établir des recommandations} pour l'adoption progressive par l'industrie
+\end{itemize}
+
+\subsection{Contributions technologiques}
+
+Les contributions technologiques comprennent :
+
+\begin{itemize}
+\item \textbf{Implémentation open-source} d'un framework complet de calibration hybride
+\item \textbf{Outils de diagnostic et monitoring} pour la validation en temps réel
+\item \textbf{Benchmarks de référence} pour les recherches futures
+\item \textbf{Protocoles de test} standardisés pour l'évaluation comparative
+\end{itemize}
 
 \section{Structure du mémoire}
 
-Ce mémoire s'organise autour de six chapitres principaux. Le chapitre 2 présente une revue exhaustive de la littérature couvrant les modèles de volatilité stochastique, les méthodes de calibration classiques, et les applications émergentes du machine learning en finance quantitative. Cette revue établit le fondement théorique de notre travail et positionne notre contribution dans le contexte de la recherche existante.
+Ce mémoire s'organise en six chapitres principaux qui progressent logiquement de la contextualisation théorique vers l'application pratique et l'analyse des résultats.
 
-Le chapitre 3 détaille la présentation et l'analyse des données utilisées, incluant la description des caractéristiques des données SPX, les procédures de nettoyage et de préparation, ainsi que l'analyse exploratoire qui guide nos choix méthodologiques.
+\textbf{Le Chapitre 2 - Revue de littérature} établit le contexte théorique en analysant l'évolution des modèles de volatilité stochastique, les méthodes de calibration traditionnelles et l'émergence des approches de Deep Learning. Cette revue critique identifie les lacunes dans la littérature existante et positionne notre contribution dans le paysage académique actuel.
 
-Le chapitre 4 constitue le cœur technique de notre travail, présentant en détail le modèle de Heston, ses propriétés mathématiques, les méthodes de calibration traditionnelles, et notre approche basée sur les réseaux de neurones. Nous y décrivons l'architecture du réseau, les stratégies d'entraînement, et les techniques de régularisation employées.
+\textbf{Le Chapitre 3 - Présentation des données} détaille les caractéristiques du dataset SPX Weekly utilisé, les procédures de nettoyage et préprocessing, ainsi que l'analyse exploratoire qui motive les choix méthodologiques ultérieurs.
 
-Le chapitre 5 présente et analyse les résultats empiriques, comparant les performances de notre approche avec les méthodes de référence en termes de précision, vitesse de calibration, et stabilité. Nous y discutons également les limitations observées et les pistes d'amélioration.
+\textbf{Le Chapitre 4 - Méthodologie} présente en détail l'implémentation de l'approche en deux étapes, incluant l'architecture du réseau de neurones, les procédures d'entraînement, et l'intégration avec les algorithmes d'optimisation traditionnels.
 
-Enfin, le chapitre 6 synthétise nos principaux résultats, discute leurs implications pratiques pour l'industrie financière, et propose des directions de recherche future. Les annexes techniques complètent le document avec les détails d'implémentation et les résultats supplémentaires.
+\textbf{Le Chapitre 5 - Résultats et discussions} constitue le cœur empirique du mémoire, présentant les résultats des expérimentations, les analyses comparatives et les tests de robustesse. Ce chapitre établit la supériorité de l'approche proposée à travers une validation statistique rigoureuse.
 
-\section{Objectifs et portée}
+\textbf{Le Chapitre 6 - Conclusions} synthétise les contributions principales, discute les implications pour la recherche et la pratique, et identifie les directions de recherche future prometteuses.
 
-L'objectif principal de ce travail consiste à démontrer la faisabilité et l'efficacité d'une approche de calibration accélérée du modèle de Heston basée sur le deep learning. Nous cherchons spécifiquement à quantifier les gains de performance computationnelle tout en maintenant un niveau de précision compatible avec les exigences pratiques de l'industrie.
+\textbf{Les Annexes} fournissent les détails techniques nécessaires à la reproduction des résultats, incluant les spécifications d'architecture, les algorithmes détaillés et les codes sources des implémentations principales.
 
-Au-delà de l'aspect technique, ce mémoire vise à contribuer à la compréhension des possibilités et limites de l'application du machine learning aux problèmes de modélisation financière. Les résultats obtenus pourront servir de référence pour le développement de solutions similaires dans d'autres contextes de modélisation en finance quantitative.
+\section{Implications et perspectives}
 
-La portée de notre étude se limite volontairement au modèle de Heston et aux options européennes, permettant une analyse approfondie et contrôlée de notre méthodologie. Cette restriction nous permet d'isoler les effets spécifiques à notre approche et de fournir des conclusions robustes sur son efficacité dans ce contexte précis.
+Cette recherche s'inscrit dans une transformation plus large de l'industrie financière vers une digitalisation accrue et une adoption généralisée de l'intelligence artificielle. Les implications s'étendent bien au-delà de la calibration spécifique du modèle de Heston, touchant aux fondements même de la méthodologie en finance quantitative.
+
+\subsection{Implications immédiates}
+
+À court terme, cette recherche vise à :
+
+\begin{itemize}
+\item \textbf{Accélérer l'adoption} des techniques de Deep Learning dans les processus de calibration de modèles
+\item \textbf{Améliorer l'efficacité opérationnelle} des équipes de gestion des risques et de trading
+\item \textbf{Réduire les coûts} associés aux infrastructures de calcul intensif
+\item \textbf{Permettre de nouveaux cas d'usage} nécessitant des calibrations à haute fréquence
+\end{itemize}
+
+\subsection{Perspectives à long terme}
+
+À plus long terme, les perspectives incluent :
+
+\begin{itemize}
+\item \textbf{Extension à d'autres modèles} de volatilité stochastique et de pricing
+\item \textbf{Intégration dans des frameworks} de gestion des risques plus complets
+\item \textbf{Développement d'approches adaptataires} qui évoluent automatiquement avec les conditions de marché
+\item \textbf{Contribution à l'émergence} d'une nouvelle génération d'outils de finance quantitative
+\end{itemize}
+
+Cette recherche contribue ainsi à établir les fondements d'une finance quantitative moderne qui combine la rigueur théorique traditionnelle avec la puissance computationnelle de l'intelligence artificielle contemporaine. Les résultats présentés dans ce mémoire démontrent qu'il est non seulement possible mais avantageux d'adopter ces nouvelles approches, ouvrant la voie à des développements encore plus ambitieux dans l'avenir.
+
+L'enjeu dépasse la simple optimisation technique : il s'agit de transformer la manière dont l'industrie financière aborde la modélisation, la calibration et la gestion des risques dans un environnement de plus en plus complexe et dynamique. Cette transformation, dont cette recherche constitue une contribution significative, définira probablement les standards de l'industrie pour les décennies à venir.
