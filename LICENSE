@@ -1,0 +1,55 @@
+MIT License
+
+Copyright (c) 2025 Pêgdwendé Yacouba KONSEIGA
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Note académique
+
+Ce mémoire constitue un travail de recherche académique. Les méthodes, résultats 
+et conclusions présentés sont fournis à des fins éducatives et de recherche. 
+
+Pour toute utilisation dans un contexte commercial ou de production, il est 
+fortement recommandé de :
+
+1. Effectuer une validation indépendante des méthodes proposées
+2. Adapter les approches aux spécificités de votre contexte d'application
+3. Consulter des experts en finance quantitative et en gestion des risques
+4. Respecter les exigences réglementaires applicables
+
+L'auteur décline toute responsabilité concernant l'utilisation pratique de ces 
+méthodes sans validation appropriée.
+
+## Citation
+
+Si vous utilisez ce travail dans vos recherches, veuillez le citer comme suit :
+
+```bibtex
+@mastersthesis{konseiga2025calibration,
+  title={Calibration accélérée du modèle de Heston par Deep Learning : 
+         conception, implémentation et benchmarks sur données SPX Weekly},
+  author={Konseiga, Pêgdwendé Yacouba},
+  year={2025},
+  school={[Nom de l'université]},
+  type={Mémoire de Master en Finance Quantitative},
+  url={https://github.com/Kyac99/Memoire-Calibration-Heston-Deep-Learning}
+}
+```
