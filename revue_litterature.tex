@@ -1,0 +1,146 @@
+\chapter{Revue de littérature}
+
+\section{Introduction}
+
+Cette revue de littérature examine les développements théoriques et empiriques qui sous-tendent notre approche de calibration accélérée du modèle de Heston par deep learning. Nous structurons cette analyse autour de quatre axes principaux : l'évolution des modèles de volatilité stochastique, les méthodes de calibration traditionnelles, l'émergence du machine learning en finance quantitative, et les applications spécifiques du deep learning à la calibration de modèles financiers.
+
+\section{Modèles de volatilité stochastique : fondements théoriques}
+
+\subsection{Les limites du modèle de Black-Scholes}
+
+Le modèle de Black-Scholes-Merton, malgré sa révolution conceptuelle dans la théorie du pricing d'options, présente des limitations empiriques bien documentées. Black et Scholes (1973) et Merton (1973) supposent une volatilité constante, hypothèse contredite par l'observation de phénomènes tels que le smile de volatilité et l'hétéroscédasticité conditionnelle des rendements financiers.
+
+Dupire (1994) et Derman et Kani (1994) ont proposé des modèles de volatilité locale pour adresser ces limitations, mais ces approches ne capturent pas la dynamique stochastique de la volatilité observée empiriquement. Les travaux de Mandelbrot (1963) et Fama (1965) avaient déjà souligné la nature non-gaussienne des rendements financiers et la clustering de volatilité.
+
+\subsection{L'émergence des modèles de volatilité stochastique}
+
+Hull et White (1987) ont proposé le premier modèle formel de volatilité stochastique, introduisant l'idée que la volatilité suit elle-même un processus stochastique. Leur modèle, bien que n'admettant pas de solution analytique fermée, a ouvert la voie à une nouvelle classe de modèles plus réalistes.
+
+Scott (1987) et Wiggins (1987) ont simultanément développé des approches similaires, établissant les fondements théoriques des modèles de volatilité stochastique. Ces travaux ont démontré que l'introduction de la stochasticité dans la volatilité permet de reproduire des stylized facts importants des marchés financiers.
+
+\subsection{Le modèle de Heston : une solution analytique}
+
+Heston (1993) a révolutionné le domaine en proposant un modèle de volatilité stochastique admettant une solution analytique fermée pour les options européennes. Le modèle spécifie que le prix de l'actif sous-jacent $S_t$ et sa variance $v_t$ suivent le système d'équations différentielles stochastiques :
+
+\begin{align}
+dS_t &= rS_t dt + \sqrt{v_t}S_t dW_t^S \\
+dv_t &= \kappa(\theta - v_t)dt + \sigma\sqrt{v_t}dW_t^v
+\end{align}
+
+où $dW_t^S$ et $dW_t^v$ sont des mouvements browniens corrélés avec $d\langle W^S, W^v \rangle_t = \rho dt$.
+
+L'élégance du modèle de Heston réside dans sa capacité à capturer l'effet de levier (via le paramètre de corrélation $\rho$) et la persistance de la volatilité (via le paramètre de retour à la moyenne $\kappa$) tout en conservant une tractabilité analytique. Cette caractéristique a contribué à son adoption massive dans l'industrie financière.
+
+\section{Méthodes de calibration traditionnelles}
+
+\subsection{Calibration par vraisemblance}
+
+La méthode de maximum de vraisemblance constitue l'approche standard pour l'estimation des paramètres de modèles de volatilité stochastique. Jacquier, Polson et Rossi (1994) ont développé des méthodes bayésiennes MCMC pour l'estimation du modèle de volatilité stochastique de base, tandis que Jones (2003) a proposé des estimateurs de maximum de vraisemblance efficaces.
+
+Pour le modèle de Heston, la fonction de vraisemblance n'admet pas de forme fermée en raison de la non-observation directe de la volatilité. Des méthodes d'approximation comme le filtre de Kalman étendu (Van der Merwe et Wan, 2003) ou les méthodes de Monte Carlo par chaînes de Markov (Eraker, 2001) sont nécessaires.
+
+\subsection{Calibration sur volatilités implicites}
+
+Une approche alternative, largement adoptée en pratique, consiste à calibrer les paramètres en minimisant les écarts entre volatilités implicites de marché et théoriques. Cette méthode, bien que moins rigoureuse théoriquement, présente l'avantage de travailler directement avec les quantités observées sur le marché.
+
+Bakshi, Cao et Chen (1997) ont analysé l'impact empirique de la spécification des modèles de volatilité stochastique sur le pricing d'options. Leurs résultats démontrent la supériorité des modèles incluant des sauts et de la volatilité stochastique par rapport au modèle de Black-Scholes.
+
+Christoffersen et Jacobs (2004) ont proposé des méthodes d'estimation robustes pour le modèle de Heston basées sur la minimisation d'erreurs de pricing. Leur approche utilise des techniques d'optimisation non-linéaire pour résoudre le problème de calibration.
+
+\subsection{Défis computationnels de la calibration}
+
+La calibration du modèle de Heston présente plusieurs défis techniques. Premièrement, l'évaluation de la formule analytique de Heston nécessite l'intégration numérique de fonctions oscillantes complexes, ce qui peut être computationnellement coûteux (Kahl et Jäckel, 2006).
+
+Deuxièmement, la fonction objectif de calibration est souvent non-convexe et multimodale, rendant l'optimisation sensible aux conditions initiales. Cui, del Baño Rollin et Germano (2017) ont documenté ces difficultés et proposé des stratégies d'optimisation globale.
+
+Troisièmement, la corrélation entre les paramètres du modèle peut conduire à des problèmes d'identification, particulièrement pour les paramètres $\kappa$ et $\sigma$ (Andersen et Brotherton-Ratcliffe, 2005).
+
+\section{Machine learning en finance quantitative}
+
+\subsection{Premières applications}
+
+L'application du machine learning en finance remonte aux années 1990 avec les travaux pionniers de White (1988) sur l'utilisation des réseaux de neurones pour la prédiction de rendements. Kimoto et al. (1990) ont démontré l'efficacité des réseaux de neurones pour la prédiction des mouvements du Nikkei.
+
+Dans le domaine du pricing d'options, Hutchinson, Lo et Poggio (1994) ont été parmi les premiers à utiliser des réseaux de neurones pour approximer les prix d'options, démontrant que ces approches peuvent rivaliser avec les méthodes analytiques traditionnelles en termes de précision.
+
+\subsection{Développements récents}
+
+L'essor du deep learning a ouvert de nouvelles perspectives. Sirignano et Cont (2019) ont appliqué des réseaux de neurones profonds au pricing d'options sur actions, démontrant des gains significatifs en termes de vitesse et de précision par rapport aux méthodes de Monte Carlo.
+
+Beck, Becker, Cheridito, Jentzen et Neufeld (2019) ont développé une théorie générale pour l'utilisation des réseaux de neurones profonds pour résoudre les équations aux dérivées partielles en finance, incluant l'équation de Black-Scholes généralisée.
+
+\subsection{Applications à la volatilité}
+
+L'application du machine learning à la modélisation de la volatilité a connu un développement particulier. Nelson et Cao (1992) ont utilisé des réseaux de neurones pour capturer la dynamique non-linéaire de la volatilité conditionnelle.
+
+Plus récemment, Ruf et Wang (2020) ont proposé des approches basées sur l'apprentissage par renforcement pour la couverture d'options en présence de coûts de transaction, tandis que Buehler et al. (2019) ont développé des stratégies de deep hedging.
+
+\section{Deep learning pour la calibration de modèles}
+
+\subsection{Travaux fondateurs}
+
+Bayer et Stemper (2018) ont introduit le concept de "deep calibration" pour les modèles de volatilité rugueuse. Leur approche utilise un réseau de neurones feed-forward pour apprendre la relation entre les paramètres du modèle rBergomi et les volatilités implicites résultantes.
+
+La méthodologie de Bayer et Stemper repose sur la génération d'un large ensemble de données synthétiques couvrant l'espace des paramètres, l'entraînement d'un réseau de neurones pour prédire les volatilités implicites, et l'utilisation de ce réseau comme approximation rapide lors de l'optimisation.
+
+\subsection{Extensions et améliorations}
+
+Stone (2019) a étendu cette approche en utilisant des réseaux de neurones convolutionnels pour exploiter la structure spatiale des surfaces de volatilité implicite. Cette méthode traite les surfaces de volatilité comme des images et applique les techniques de vision par ordinateur.
+
+Hernandez (2017) a proposé une approche similaire pour le modèle de Heston, démontrant la faisabilité de l'accélération de la calibration via les réseaux de neurones. Cependant, son travail reste limité en termes d'analyse comparative et de validation empirique.
+
+\subsection{Défis techniques et solutions}
+
+L'application du deep learning à la calibration soulève plusieurs défis techniques. Premièrement, la génération d'ensembles de données d'entraînement représentatifs nécessite une compréhension approfondie de l'espace des paramètres et des distributions réalistes.
+
+Deuxièmement, l'architecture des réseaux de neurones doit être soigneusement conçue pour capturer les non-linéarités complexes de la relation paramètres-volatilités implicites. Horvath, Muguruza et Tomas (2019) ont analysé ces aspects architecturaux en détail.
+
+Troisièmement, la validation et l'interprétation des modèles de deep learning restent des défis importants. Cont (2019) a souligné l'importance de la robustesse et de l'explicabilité des modèles de machine learning en finance.
+
+\section{Differential machine learning}
+
+\subsection{Concepts fondamentaux}
+
+Huge et Savine (2020) ont introduit le concept de "differential machine learning", une extension du machine learning traditionnel qui inclut l'apprentissage des dérivées partielles des fonctions approximées. Cette approche est particulièrement pertinente pour les applications financières où les sensibilités (Greeks) sont cruciales.
+
+Le differential machine learning exploite le fait que l'algorithme de backpropagation calcule naturellement les gradients, permettant d'entraîner simultanément sur les valeurs des fonctions et leurs dérivées. Cette approche améliore significativement la précision et la stabilité de l'approximation.
+
+\subsection{Applications à la calibration}
+
+L'application du differential machine learning à la calibration de modèles présente plusieurs avantages. Premièrement, l'inclusion des dérivées dans l'entraînement améliore la précision de l'approximation, particulièrement dans les régions de l'espace des paramètres où les données sont rares.
+
+Deuxièmement, cette approche fournit naturellement les sensibilités du modèle par rapport aux paramètres, information utile pour l'analyse de risque et l'optimisation. Savine (2019) a démontré ces avantages dans le contexte du pricing d'options exotiques.
+
+\section{Validation et performance}
+
+\subsection{Métriques d'évaluation}
+
+L'évaluation des méthodes de calibration accélérée nécessite des métriques appropriées. Les mesures traditionnelles incluent l'erreur quadratique moyenne sur les volatilités implicites, l'erreur absolue moyenne, et les mesures de corrélation.
+
+Des métriques plus sophistiquées considèrent la distribution des erreurs, leur structure temporelle, et leur dépendance aux conditions de marché. Roper (2010) a proposé un framework complet pour l'évaluation des modèles de volatilité.
+
+\subsection{Tests de robustesse}
+
+La robustesse des méthodes de machine learning en finance nécessite des tests approfondis. Cela inclut l'analyse de la performance sur des données hors échantillon, la stabilité face aux changements de régime de marché, et la résistance aux données aberrantes.
+
+Gu, Kelly et Xiu (2020) ont proposé une méthodologie systématique pour l'évaluation des modèles de machine learning en finance, soulignant l'importance des tests de robustesse temporelle et cross-sectorielle.
+
+\section{Lacunes et opportunités}
+
+\subsection{Limitations des approches existantes}
+
+Malgré les progrès récents, plusieurs limitations persistent dans l'application du deep learning à la calibration de modèles financiers. Premièrement, la plupart des études se concentrent sur des cas d'usage spécifiques sans fournir de comparaisons systématiques avec les méthodes traditionnelles.
+
+Deuxièmement, l'analyse de la robustesse et de la stabilité des modèles entraînés reste insuffisante. La sensibilité aux hyperparamètres, la dépendance aux données d'entraînement, et la généralisation à de nouveaux régimes de marché nécessitent une investigation plus approfondie.
+
+\subsection{Opportunités de recherche}
+
+Notre travail s'inscrit dans cette dynamique en proposant une analyse comparative systématique des méthodes de calibration accélérée pour le modèle de Heston. Nous adressons spécifiquement les lacunes identifiées en matière de validation empirique et d'analyse de performance.
+
+Les opportunités futures incluent l'extension à d'autres modèles de volatilité stochastique, l'incorporation de contraintes de non-arbitrage dans l'entraînement, et le développement de méthodes d'incertitude quantification pour les prédictions des réseaux de neurones.
+
+\section{Positionnement de notre contribution}
+
+Cette revue de littérature révèle que, bien que les foundations théoriques du deep learning pour la calibration soient établies, une analyse comparative rigoureuse spécifiquement centrée sur le modèle de Heston fait défaut. Notre travail contribue à combler cette lacune en proposant une méthodologie complète d'évaluation sur des données réelles.
+
+Notre approche se distingue par sa focus sur la validation empirique systématique, l'analyse des gains computationnels, et l'évaluation de la robustesse dans différentes conditions de marché. Ces aspects sont essentiels pour l'adoption pratique de ces méthodes dans l'industrie financière.
