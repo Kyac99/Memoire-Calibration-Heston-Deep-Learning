@@ -1,0 +1,51 @@
+\chapter{Introduction}
+
+\section{Contexte général}
+
+La modélisation de la volatilité constitue l'un des défis centraux de la finance quantitative moderne. Depuis les travaux fondateurs de Black, Scholes et Merton dans les années 1970, la compréhension et la modélisation du comportement stochastique des prix d'actifs financiers ont connu des développements considérables. L'observation empirique que la volatilité des actifs financiers n'est pas constante, contrairement aux hypothèses du modèle de Black-Scholes, a conduit au développement de modèles de volatilité stochastique plus sophistiqués.
+
+Parmi ces modèles, le modèle de Heston, introduit par Steven Heston en 1993, occupe une position privilégiée dans l'industrie financière. Ce modèle à volatilité stochastique permet de capturer des phénomènes empiriques importants tels que l'effet de levier (correlation négative entre les rendements et la volatilité) et la persistance de la volatilité. Sa popularité provient notamment de l'existence d'une solution analytique fermée pour le pricing d'options européennes, ce qui en fait un outil pratique pour les praticiens.
+
+Le processus de calibration des paramètres du modèle de Heston sur des données de marché constitue cependant un défi computationnel majeur. Les méthodes traditionnelles d'optimisation, qu'elles soient basées sur la maximisation de la vraisemblance ou la minimisation des écarts entre volatilités implicites observées et théoriques, nécessitent des ressources computationnelles importantes et souffrent de problèmes de convergence vers des optima locaux.
+
+\section{Problématique et motivation}
+
+La calibration du modèle de Heston présente plusieurs défis techniques et pratiques. Premièrement, la fonction objectif à optimiser est souvent non-convexe et multimodale, rendant l'optimisation sensible aux conditions initiales et susceptible de converger vers des minima locaux. Deuxièmement, chaque évaluation de la fonction objectif nécessite le calcul de multiples prix d'options via la formule analytique de Heston, ce qui devient coûteux lorsque l'on traite des surfaces de volatilité complètes avec de nombreux strikes et maturités.
+
+Troisièmement, la nature dynamique des marchés financiers exige une recalibration fréquente des paramètres, parfois en temps réel pour certaines applications de trading algorithmique. Les méthodes d'optimisation classiques, bien qu'étant précises, ne répondent pas aux contraintes temporelles imposées par ces environnements.
+
+L'émergence du machine learning et en particulier du deep learning dans le domaine financier offre de nouvelles perspectives pour adresser ces défis. L'idée fondamentale consiste à entraîner un réseau de neurones pour apprendre la relation complexe entre les paramètres du modèle de Heston et les volatilités implicites résultantes. Une fois entraîné, ce réseau peut fournir des prédictions instantanées, transformant ainsi le problème de calibration en un problème d'inversion rapide.
+
+\section{Approche et contributions}
+
+Ce mémoire explore l'application des techniques de deep learning à la calibration accélérée du modèle de Heston. Notre approche s'inspire des travaux récents de Bayer et Stemper (2018) sur la calibration profonde des modèles de volatilité rugueuse, que nous adaptons spécifiquement au contexte du modèle de Heston.
+
+L'architecture proposée repose sur un réseau de neurones feed-forward dense qui apprend à mapper les caractéristiques de marché (moneyness, temps à maturité) et les paramètres du modèle vers les volatilités implicites correspondantes. Cette approche permet de contourner les calculs coûteux répétés de la formule analytique de Heston lors de la phase d'optimisation.
+
+Nos principales contributions incluent la conception et l'implémentation d'une méthodologie complète de calibration accélérée, l'évaluation comparative des performances par rapport aux méthodes traditionnelles sur des données SPX réelles, et l'analyse des gains computationnels obtenus sans compromettre la précision de la calibration.
+
+\section{Données et validation empirique}
+
+Pour valider notre approche, nous utilisons des données d'options sur l'indice S\&P 500 (SPX) avec des fréquences hebdomadaires. Ce choix est motivé par la liquidité importante de ces instruments et la richesse des surfaces de volatilité disponibles, permettant une évaluation robuste de notre méthodologie.
+
+L'ensemble de données couvre plusieurs périodes de marché distinctes, incluant des phases de stabilité et de stress, afin de tester la robustesse de notre approche dans différents régimes de volatilité. Cette diversité est cruciale pour s'assurer que le modèle entraîné conserve ses performances prédictives dans diverses conditions de marché.
+
+\section{Structure du mémoire}
+
+Ce mémoire s'organise autour de six chapitres principaux. Le chapitre 2 présente une revue exhaustive de la littérature couvrant les modèles de volatilité stochastique, les méthodes de calibration classiques, et les applications émergentes du machine learning en finance quantitative. Cette revue établit le fondement théorique de notre travail et positionne notre contribution dans le contexte de la recherche existante.
+
+Le chapitre 3 détaille la présentation et l'analyse des données utilisées, incluant la description des caractéristiques des données SPX, les procédures de nettoyage et de préparation, ainsi que l'analyse exploratoire qui guide nos choix méthodologiques.
+
+Le chapitre 4 constitue le cœur technique de notre travail, présentant en détail le modèle de Heston, ses propriétés mathématiques, les méthodes de calibration traditionnelles, et notre approche basée sur les réseaux de neurones. Nous y décrivons l'architecture du réseau, les stratégies d'entraînement, et les techniques de régularisation employées.
+
+Le chapitre 5 présente et analyse les résultats empiriques, comparant les performances de notre approche avec les méthodes de référence en termes de précision, vitesse de calibration, et stabilité. Nous y discutons également les limitations observées et les pistes d'amélioration.
+
+Enfin, le chapitre 6 synthétise nos principaux résultats, discute leurs implications pratiques pour l'industrie financière, et propose des directions de recherche future. Les annexes techniques complètent le document avec les détails d'implémentation et les résultats supplémentaires.
+
+\section{Objectifs et portée}
+
+L'objectif principal de ce travail consiste à démontrer la faisabilité et l'efficacité d'une approche de calibration accélérée du modèle de Heston basée sur le deep learning. Nous cherchons spécifiquement à quantifier les gains de performance computationnelle tout en maintenant un niveau de précision compatible avec les exigences pratiques de l'industrie.
+
+Au-delà de l'aspect technique, ce mémoire vise à contribuer à la compréhension des possibilités et limites de l'application du machine learning aux problèmes de modélisation financière. Les résultats obtenus pourront servir de référence pour le développement de solutions similaires dans d'autres contextes de modélisation en finance quantitative.
+
+La portée de notre étude se limite volontairement au modèle de Heston et aux options européennes, permettant une analyse approfondie et contrôlée de notre méthodologie. Cette restriction nous permet d'isoler les effets spécifiques à notre approche et de fournir des conclusions robustes sur son efficacité dans ce contexte précis.
