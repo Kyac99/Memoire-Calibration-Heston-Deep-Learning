@@ -1,0 +1,200 @@
+\chapter{Méthodologie}
+
+\section{Introduction}
+
+Ce chapitre présente la méthodologie complète de notre approche de calibration accélérée du modèle de Heston par deep learning. Nous débutons par une formalisation rigoureuse du modèle de Heston et de ses propriétés théoriques, puis décrivons les méthodes de calibration traditionnelles avant d'introduire notre approche basée sur les réseaux de neurones. La présentation suit une progression logique depuis les fondements théoriques jusqu'aux détails d'implémentation pratique.
+
+\section{Le modèle de Heston : formulation et propriétés}
+
+\subsection{Formulation mathématique}
+
+Le modèle de Heston (1993) constitue l'un des modèles de volatilité stochastique les plus influents en finance quantitative. Il spécifie la dynamique conjointe du prix de l'actif sous-jacent $S_t$ et de sa variance instantanée $v_t$ sous la mesure risque-neutre :
+
+\begin{align}
+dS_t &= rS_t dt + \sqrt{v_t}S_t dW_t^{(1)} \label{eq:heston_price}\\
+dv_t &= \kappa(\theta - v_t)dt + \sigma\sqrt{v_t}dW_t^{(2)} \label{eq:heston_variance}
+\end{align}
+
+où $dW_t^{(1)}$ et $dW_t^{(2)}$ représentent deux mouvements browniens standards corrélés par $d\langle W^{(1)}, W^{(2)} \rangle_t = \rho dt$. Les paramètres du modèle possèdent des interprétations économiques précises : $\kappa > 0$ désigne la vitesse de retour à la moyenne de la variance, $\theta > 0$ représente la variance long terme, $\sigma > 0$ quantifie la volatilité de la variance, et $\rho \in [-1,1]$ capture l'effet de levier.
+
+\subsection{Propriétés théoriques fondamentales}
+
+La condition de Feller $2\kappa\theta \geq \sigma^2$ garantit que le processus de variance reste strictement positif, propriété essentielle pour la cohérence économique du modèle. Lorsque cette condition est violée, le processus peut atteindre zéro avec une probabilité positive, nécessitant des techniques de réflexion ou d'absorption pour le traitement numérique.
+
+La structure de corrélation entre les innovations du prix et de la variance, captée par le paramètre $\rho$, permet de reproduire l'effet de levier empiriquement observé. Une corrélation négative implique que les chocs négatifs sur le prix s'accompagnent d'une augmentation de la volatilité, phénomène systématiquement documenté sur les marchés d'actions.
+
+\subsection{Solution analytique pour les options européennes}
+
+L'élégance du modèle de Heston réside dans l'existence d'une solution analytique fermée pour le prix des options européennes. Cette solution s'exprime sous la forme d'une intégrale de Fourier :
+
+\begin{equation}
+C(S_0, v_0, \tau) = S_0 P_1 - Ke^{-r\tau} P_2
+\end{equation}
+
+où $P_1$ et $P_2$ représentent des probabilités calculées via la transformée de Fourier de la fonction caractéristique du logarithme du prix. Ces probabilités s'expriment comme :
+
+\begin{equation}
+P_j = \frac{1}{2} + \frac{1}{\pi} \int_0^{\infty} \text{Re}\left[\frac{e^{-i\phi \ln(K)}\phi_j(S_0, v_0, \tau, \phi)}{i\phi}\right] d\phi
+\end{equation}
+
+La fonction caractéristique $\phi_j$ admet une forme exponentielle affine, caractéristique des modèles de diffusion affines. Cette propriété découle de la structure particulière des équations différentielles stochastiques du modèle de Heston.
+
+\subsection{Défis computationnels de l'évaluation}
+
+Bien que la solution analytique de Heston évite les simulations de Monte Carlo, son évaluation numérique présente des défis techniques significatifs. L'intégrale de Fourier implique des fonctions oscillantes complexes dont l'intégration numérique nécessite des techniques sophistiquées.
+
+Les principales difficultés incluent la gestion de la discontinuité de la fonction intégrande à l'origine, le choix de la borne supérieure d'intégration, et le traitement des instabilités numériques dans certaines régions de l'espace des paramètres. Ces aspects techniques expliquent en partie la motivation pour des approches alternatives comme notre méthode de deep learning.
+
+\section{Méthodes de calibration traditionnelles}
+
+\subsection{Calibration par optimisation non-linéaire}
+
+L'approche standard de calibration du modèle de Heston consiste à minimiser une fonction objectif mesurant l'écart entre les volatilités implicites observées sur le marché et celles prédites par le modèle. Cette fonction objectif s'écrit généralement sous la forme :
+
+\begin{equation}
+\Theta^* = \arg\min_{\Theta} \sum_{i=1}^{N} w_i \left(\sigma_{imp}^{market}(K_i, T_i) - \sigma_{imp}^{Heston}(K_i, T_i; \Theta)\right)^2
+\end{equation}
+
+où $\Theta = (\kappa, \theta, \sigma, \rho, v_0)$ représente le vecteur des paramètres à estimer, $w_i$ désigne un poids associé à l'observation $i$, et $N$ correspond au nombre total d'options observées.
+
+\subsection{Choix de la fonction objectif et pondération}
+
+Le choix de la fonction objectif et du schéma de pondération influence significativement les résultats de calibration. Les approches courantes incluent la minimisation des erreurs absolues, des erreurs relatives, ou des erreurs vega-pondérées. Chaque spécification présente des avantages et inconvénients selon les objectifs d'utilisation.
+
+La pondération par vega accorde plus d'importance aux options sensibles aux variations de volatilité, approche pertinente pour les applications de gestion des risques. La pondération uniforme traite toutes les observations de manière égale, tandis que la pondération par liquidité privilégie les options les plus activement négociées.
+
+\subsection{Algorithmes d'optimisation}
+
+Les algorithmes d'optimisation couramment utilisés incluent les méthodes de quasi-Newton, les algorithmes génétiques, et l'optimisation par essaims particulaires. Chaque approche présente des caractéristiques spécifiques en termes de convergence, de robustesse aux minima locaux, et de coût computationnel.
+
+Les méthodes de quasi-Newton, telles que BFGS, exploitent les informations de gradient pour une convergence rapide mais restent sensibles aux conditions initiales. Les algorithmes métaheuristiques offrent une meilleure exploration globale au prix d'un coût computationnel supérieur.
+
+\subsection{Contraintes et régularisation}
+
+La calibration pratique nécessite l'imposition de contraintes sur l'espace des paramètres pour garantir la stabilité économique et numérique du modèle. Ces contraintes incluent les bornes naturelles ($\kappa > 0$, $\theta > 0$, $\sigma > 0$), la condition de Feller, et des bornes réalistes basées sur l'évidence empirique.
+
+Des techniques de régularisation peuvent également être employées pour éviter l'overfitting, particulièrement pertinent lorsque le nombre d'observations est limité. La régularisation par pénalité L2 sur les paramètres constitue une approche standard pour améliorer la stabilité de l'estimation.
+
+\section{Architecture du réseau de neurones}
+
+\subsection{Conception générale}
+
+Notre architecture s'inspire de l'approche de Bayer et Stemper (2018) adaptée spécifiquement au modèle de Heston. Le réseau de neurones est conçu pour apprendre la relation complexe entre les caractéristiques d'entrée (moneyness, maturité, paramètres du modèle) et la volatilité implicite de sortie.
+
+L'architecture adoptée consiste en un réseau feed-forward dense avec plusieurs couches cachées. Cette structure permet de capturer les non-linéarités complexes de la fonction de mapping tout en conservant une tractabilité computationnelle pour l'entraînement et l'inférence.
+
+\subsection{Variables d'entrée et préprocessing}
+
+Les variables d'entrée du réseau comprennent la moneyness $m = S_0/K$, la maturité $\tau$, et les cinq paramètres du modèle de Heston $(\kappa, \theta, \sigma, \rho, v_0)$. Cette spécification permet au réseau d'apprendre directement la relation paramètres-volatilité implicite nécessaire pour la calibration inverse.
+
+Le préprocessing des variables d'entrée inclut une normalisation par score z pour assurer la stabilité de l'entraînement. Les transformations appliquées respectent les domaines naturels des variables : transformation logarithmique pour les variables strictement positives, transformation arctangente hyperbolique pour les variables bornées.
+
+\subsection{Architecture des couches cachées}
+
+L'architecture comprend quatre couches cachées avec 256, 128, 64, et 32 neurones respectivement. Cette structure pyramidale permet une extraction hiérarchique des features, des représentations générales vers les patterns spécialisés. Les fonctions d'activation ReLU sont utilisées pour introduire la non-linéarité nécessaire à l'approximation des relations complexes.
+
+Des couches de dropout avec des taux de 0.3 et 0.2 sont introduites après les deux premières couches cachées pour prévenir l'overfitting. Cette régularisation est particulièrement importante compte tenu de la complexité de l'espace des paramètres et de la richesse de l'ensemble d'entraînement.
+
+\subsection{Couche de sortie et post-processing}
+
+La couche de sortie comprend un unique neurone avec une fonction d'activation linéaire, produisant la volatilité implicite prédite. Cette spécification respecte la nature continue de la variable de sortie tout en permettant l'apprentissage de relations arbitrairement complexes via les couches cachées.
+
+Le post-processing de la sortie inclut une dénormalisation appropriée et l'application de contraintes de cohérence (volatilité strictement positive). Ces étapes garantissent que les prédictions du réseau respectent les contraintes économiques fondamentales.
+
+\section{Stratégie d'entraînement}
+
+\subsection{Génération de l'ensemble d'entraînement}
+
+L'ensemble d'entraînement combine des données réelles et synthétiques selon la méthodologie établie. Les données synthétiques sont générées par échantillonnage uniforme dans l'espace des paramètres, suivi du calcul des volatilités implicites correspondantes via la formule analytique de Heston.
+
+Cette approche hybride exploite la richesse des données réelles pour l'ancrage empirique tout en bénéficiant de la couverture exhaustive des données synthétiques. Le rapport synthétique/réel d'environ 7:1 s'inspire des best practices établies dans la littérature.
+
+\subsection{Fonction de perte et optimisation}
+
+La fonction de perte adoptée correspond à l'erreur quadratique moyenne entre volatilités implicites prédites et observées, avec une pénalité L2 sur les poids du réseau pour la régularisation :
+
+\begin{equation}
+\mathcal{L} = \frac{1}{N}\sum_{i=1}^{N} (\sigma_{imp}^{pred}(x_i) - \sigma_{imp}^{true}(x_i))^2 + \lambda \sum_{w} w^2
+\end{equation}
+
+où $\lambda$ contrôle l'intensité de la régularisation. Cette spécification équilibre la précision des prédictions avec la généralisation du modèle.
+
+\subsection{Algorithme d'optimisation et hyperparamètres}
+
+L'optimisation utilise l'algorithme Adam avec un taux d'apprentissage initial de 0.001, des paramètres de moment $\beta_1 = 0.9$ et $\beta_2 = 0.999$. Cette configuration assure une convergence stable tout en adaptant automatiquement le taux d'apprentissage selon l'historique des gradients.
+
+L'entraînement s'effectue par mini-batches de taille 512 sur 200 époques avec early stopping basé sur la performance de validation. Cette stratégie prévient l'overfitting tout en permettant une convergence complète de l'algorithme d'optimisation.
+
+\section{Procédure de calibration inverse}
+
+\subsection{Formulation du problème d'optimisation}
+
+Une fois le réseau entraîné, la calibration s'effectue par résolution du problème d'optimisation inverse :
+
+\begin{equation}
+\hat{\Theta} = \arg\min_{\Theta} \sum_{i=1}^{N} w_i \left(\sigma_{imp}^{market}(K_i, T_i) - \mathcal{NN}(m_i, \tau_i, \Theta)\right)^2
+\end{equation}
+
+où $\mathcal{NN}(\cdot)$ désigne la prédiction du réseau de neurones entraîné. Cette formulation remplace l'évaluation coûteuse de la formule de Heston par une prédiction instantanée du réseau.
+
+\subsection{Algorithme d'optimisation pour la calibration}
+
+La calibration inverse utilise l'algorithme L-BFGS-B qui exploite efficacement les informations de gradient disponibles via la différentiation automatique du réseau de neurones. Cette approche combine la rapidité de convergence des méthodes de quasi-Newton avec la gestion des contraintes par bornes.
+
+Les gradients de la fonction objectif par rapport aux paramètres sont calculés via backpropagation, technique standard pour la différentiation de réseaux de neurones. Cette disponibilité des gradients analytiques accélère significativement la convergence par rapport aux méthodes d'optimisation sans gradient.
+
+\subsection{Gestion des contraintes et initialisation}
+
+Les contraintes sur les paramètres sont gérées via des transformations de variables et des projections. La condition de Feller est imposée par une pénalité douce dans la fonction objectif, approche qui préserve la différentiabilité tout en encourageant le respect de la contrainte.
+
+L'initialisation des paramètres pour l'optimisation utilise des valeurs typiques basées sur l'évidence empirique : $\kappa = 2$, $\theta = 0.04$, $\sigma = 0.3$, $\rho = -0.5$, $v_0 = 0.04$. Cette initialisation centrale dans l'espace des paramètres favorise une convergence stable.
+
+\section{Métriques d'évaluation}
+
+\subsection{Métriques de précision}
+
+L'évaluation de la performance utilise plusieurs métriques complémentaires. L'erreur quadratique moyenne (RMSE) quantifie la précision globale des prédictions :
+
+\begin{equation}
+RMSE = \sqrt{\frac{1}{N}\sum_{i=1}^{N} (\sigma_{imp}^{pred}(x_i) - \sigma_{imp}^{true}(x_i))^2}
+\end{equation}
+
+L'erreur absolue moyenne (MAE) fournit une mesure plus robuste aux outliers :
+
+\begin{equation}
+MAE = \frac{1}{N}\sum_{i=1}^{N} |\sigma_{imp}^{pred}(x_i) - \sigma_{imp}^{true}(x_i)|
+\end{equation}
+
+Le coefficient de détermination $R^2$ mesure la proportion de variance expliquée par le modèle, indicateur de la qualité globale de l'ajustement.
+
+\subsection{Métriques de performance computationnelle}
+
+L'évaluation de l'efficacité computationnelle compare les temps d'exécution de la calibration traditionnelle et accélérée. Le speed-up ratio quantifie le gain en performance :
+
+\begin{equation}
+\text{Speed-up} = \frac{\text{Temps calibration traditionnelle}}{\text{Temps calibration accélérée}}
+\end{equation}
+
+Cette métrique inclut uniquement le temps de calibration, excluant l'entraînement initial du réseau considéré comme un coût fixe amorti sur de multiples calibrations.
+
+\subsection{Tests de robustesse}
+
+La robustesse de l'approche est évaluée via plusieurs tests complémentaires. La stabilité des paramètres calibrés est mesurée par la variance des estimations sur des échantillons bootstrap. Cette analyse révèle la sensibilité de la méthode aux variations d'échantillonnage.
+
+La généralisation temporelle est testée en évaluant les performances sur des périodes non incluses dans l'entraînement. Cette validation out-of-sample constitue un test crucial pour l'applicabilité pratique de notre approche.
+
+\section{Implémentation technique}
+
+\subsection{Framework et outils utilisés}
+
+L'implémentation utilise Python avec les bibliothèques TensorFlow pour le deep learning, QuantLib pour l'évaluation de référence du modèle de Heston, et SciPy pour l'optimisation. Cette combinaison offre un environnement robuste et performant pour notre méthodologie.
+
+Le code est structuré de manière modulaire pour faciliter la reproductibilité et l'extension. Les composants principaux incluent un module de génération de données, un module de définition et d'entraînement du réseau, et un module de calibration inverse.
+
+\subsection{Considérations de performance}
+
+L'optimisation des performances exploite les capacités de calcul parallèle des GPUs pour l'entraînement du réseau de neurones et l'évaluation batch des prédictions. Cette parallélisation accélère significativement les calculs par rapport à une implémentation CPU séquentielle.
+
+La gestion mémoire optimise l'utilisation des ressources en chargeant les données par batches et en libérant la mémoire de manière appropriée. Ces optimisations permettent de traiter des ensembles de données volumineux sans contraintes matérielles excessives.
+
+Cette méthodologie complète fournit le cadre technique nécessaire pour notre analyse comparative de la calibration accélérée du modèle de Heston. L'implémentation rigoureuse de chaque composant garantit la validité et la reproductibilité de nos résultats empiriques.
