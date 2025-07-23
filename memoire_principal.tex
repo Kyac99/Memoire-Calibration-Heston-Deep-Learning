@@ -1,40 +1,69 @@
-\documentclass[12pt,a4paper]{report}
+\documentclass[12pt,a4paper,oneside]{report}
+
+% Encodage et langue
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
 \usepackage[T1]{fontenc}
+
+% Géométrie et mise en page
 \usepackage{geometry}
+\geometry{left=3cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% Mathématiques
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage{mathtools}
+
+% Graphiques et figures
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Tableaux
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{multirow}
 \usepackage{multicol}
-\usepackage{hyperref}
-\usepackage{natbib}
-\usepackage{algorithm}
-\usepackage{algorithmic}
-\usepackage{listings}
+\usepackage{tabularx}
+
+% Mise en forme et couleurs
 \usepackage{xcolor}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{tikz}
-\usepackage{pgfplots}
+\usepackage{enumitem}
+\usepackage{setspace}
+
+% Liens et références
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{url}
+
+% Algorithmes et code
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{listings}
+
+% Annexes
 \usepackage{appendix}
 
-% Configuration de la géométrie
-\geometry{left=3cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
-
-% Configuration des liens
+% Configuration des liens hypertexte
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,      
     urlcolor=cyan,
     citecolor=red,
+    bookmarksdepth=3,
+    bookmarksopen=true,
+    bookmarksopenlevel=1,
+    pdftitle={Calibration accélérée du modèle de Heston par Deep Learning},
+    pdfauthor={Pêgdwendé Yacouba KONSEIGA},
+    pdfsubject={Finance Quantitative, Deep Learning, Modèle de Heston},
+    pdfkeywords={Calibration, Heston, Deep Learning, Options SPX, Volatilité Stochastique}
 }
 
 % Configuration des listings de code
@@ -48,10 +77,14 @@
     numberstyle=\tiny\color{gray},
     frame=single,
     breaklines=true,
-    captionpos=b
+    captionpos=b,
+    showstringspaces=false,
+    tabsize=2,
+    xleftmargin=2em,
+    framexleftmargin=1.5em
 }
 
-% Nouveaux théorèmes
+% Définition des environnements théoriques
 \newtheorem{theorem}{Théorème}[chapter]
 \newtheorem{lemma}[theorem]{Lemme}
 \newtheorem{proposition}[theorem]{Proposition}
@@ -59,27 +92,112 @@
 \newtheorem{definition}[theorem]{Définition}
 \newtheorem{remark}[theorem]{Remarque}
 \newtheorem{example}[theorem]{Exemple}
+\newtheorem{assumption}{Hypothèse}[chapter]
 
-% Titre et informations
+% Commandes personnalisées
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Cov}{\text{Cov}}
+\newcommand{\argmin}{\text{argmin}}
+\newcommand{\argmax}{\text{argmax}}
+
+% Espacement
+\onehalfspacing
+
+% Informations du document
 \title{
     \Large \textbf{Calibration accélérée du modèle de Heston par Deep Learning : conception, implémentation et benchmarks sur données SPX Weekly}
 }
 
 \author{
-    Nom de l'étudiant\\
-    Master en Finance Quantitative\\
-    Université
+    Pêgdwendé Yacouba KONSEIGA\\[0.5cm]
+    Mémoire de Master en Finance Quantitative\\[0.3cm]
+    Sous la direction de [Nom du Directeur]\\[0.5cm]
+    \textit{Université [Nom]}\\
+    \textit{Faculté [Nom]}\\
+    \textit{Département [Nom]}
 }
 
 \date{\today}
 
 \begin{document}
 
+% Page de titre
 \maketitle
 
+% Page blanche après le titre
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+% Résumé
+\newpage
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Cette recherche examine l'application du Deep Learning à la calibration du modèle de Heston pour le pricing d'options, en s'appuyant sur les méthodologies développées par Bayer et Stemper (2018). L'étude démontre qu'une approche hybride en deux étapes, combinant l'approximation neuronale de la fonction de pricing avec des algorithmes d'optimisation traditionnels, peut révolutionner la calibration de modèles de volatilité stochastique.
+
+Les résultats obtenus sur un dataset complet d'options SPX Weekly (2020-2022) révèlent une accélération computationnelle spectaculaire d'un facteur 11x, accompagnée d'une amélioration systématique de la précision (12.5\% en RMSE) et de la robustesse (taux de convergence de 98\% vs 87\%). Cette supériorité se maintient à travers différents régimes de marché, incluant les périodes de haute volatilité liées à la crise COVID-19.
+
+L'approche proposée préserve la transparence et la contrôlabilité des méthodes traditionnelles tout en exploitant l'efficacité computationnelle des techniques d'apprentissage automatique. Les implications pour l'industrie financière sont significatives, ouvrant la voie à des applications de calibration en temps réel, de gestion dynamique des risques et d'optimisation des coûts opérationnels.
+
+\textbf{Mots-clés :} Modèle de Heston, Deep Learning, Calibration de modèles, Options SPX Weekly, Volatilité stochastique, Finance quantitative
+
+% Abstract en anglais
+\newpage
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This research examines the application of Deep Learning to Heston model calibration for option pricing, building upon methodologies developed by Bayer and Stemper (2018). The study demonstrates that a hybrid two-step approach, combining neural approximation of the pricing function with traditional optimization algorithms, can revolutionize stochastic volatility model calibration.
+
+Results obtained on a comprehensive SPX Weekly options dataset (2020-2022) reveal a spectacular computational acceleration of 11x, accompanied by systematic improvements in accuracy (12.5\% in RMSE) and robustness (98\% vs 87\% convergence rate). This superiority is maintained across different market regimes, including high volatility periods related to the COVID-19 crisis.
+
+The proposed approach preserves the transparency and controllability of traditional methods while exploiting the computational efficiency of machine learning techniques. The implications for the financial industry are significant, paving the way for real-time calibration applications, dynamic risk management, and operational cost optimization.
+
+\textbf{Keywords:} Heston model, Deep Learning, Model calibration, SPX Weekly options, Stochastic volatility, Quantitative finance
+
+% Remerciements
+\newpage
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Je tiens à exprimer ma profonde gratitude à toutes les personnes qui ont contribué à la réalisation de ce mémoire.
+
+Mes premiers remerciements s'adressent à mon directeur de mémoire, [Nom], pour son encadrement exceptionnel, ses conseils éclairés et sa disponibilité constante tout au long de cette recherche. Ses suggestions méthodologiques et ses relectures attentives ont été déterminantes pour la qualité de ce travail.
+
+Je remercie également les membres du jury, [Noms], pour avoir accepté d'évaluer ce mémoire et pour leurs commentaires constructifs qui ont permis d'enrichir cette recherche.
+
+Ma reconnaissance va aussi aux équipes de [Institution/Entreprise] pour m'avoir fourni l'accès aux données de marché et aux ressources computationnelles nécessaires à cette étude. Leur soutien technique et leurs insights pratiques ont été précieux.
+
+Je souhaite remercier mes collègues étudiants et les membres du laboratoire pour les discussions stimulantes et l'entraide qui ont enrichi ma réflexion tout au long de ce projet.
+
+Enfin, mes remerciements les plus sincères vont à ma famille et mes proches pour leur soutien indéfectible et leur compréhension durant ces mois de recherche intensive.
+
+% Tables des matières
+\newpage
 \tableofcontents
+
+% Liste des figures
+\newpage
 \listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+
+% Liste des tableaux
+\newpage
 \listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+
+% Liste des algorithmes
+\newpage
+\listofalgorithms
+\addcontentsline{toc}{chapter}{Liste des algorithmes}
+
+% Corps du mémoire
+\newpage
+\pagestyle{plain}
+\setcounter{page}{1}
 
 % Inclusion des chapitres
 \input{introduction}
@@ -90,10 +208,13 @@
 \input{conclusions}
 
 % Bibliographie
+\newpage
 \bibliographystyle{apalike}
 \bibliography{references}
+\addcontentsline{toc}{chapter}{Bibliographie}
 
 % Annexes
+\newpage
 \appendix
 \input{annexes}
 
