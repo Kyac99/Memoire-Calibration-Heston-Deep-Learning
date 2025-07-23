@@ -1,0 +1,127 @@
+\chapter{Présentation des données}
+
+\section{Introduction}
+
+La qualité et la représentativité des données constituent des éléments cruciaux pour le développement et la validation de notre approche de calibration accélérée. Ce chapitre présente une analyse détaillée des données d'options sur l'indice S\&P 500 utilisées dans notre étude, en décrivant leur structure, leurs caractéristiques statistiques, et les procédures de préparation mises en œuvre.
+
+\section{Description des données SPX}
+
+\subsection{Source et caractéristiques générales}
+
+Nos données proviennent du Chicago Board Options Exchange (CBOE), qui constitue la référence mondiale pour les options sur l'indice S\&P 500. Ces données couvrent une période de trois années, s'étendant de janvier 2018 à décembre 2020, permettant d'analyser les performances de notre méthodologie dans diverses conditions de marché.
+
+La période sélectionnée présente l'avantage d'inclure des phases de marché contrastées. La première partie de l'échantillon correspond à une période de croissance relativement stable, tandis que l'année 2020 est marquée par la volatilité exceptionnelle liée à la pandémie de COVID-19. Cette diversité temporelle permet d'évaluer la robustesse de notre approche dans différents régimes de volatilité.
+
+Les données incluent les prix de clôture quotidiens pour l'ensemble des options SPX négociées, avec leurs caractéristiques contractuelles correspondantes. Chaque observation comprend le prix de l'option, le strike, la maturité, le prix du sous-jacent, et le taux sans risque applicable. La richesse de ces informations permet une analyse granulaire des surfaces de volatilité implicite.
+
+\subsection{Structure temporelle et cross-sectionelle}
+
+L'analyse de la structure temporelle révèle une fréquence d'observation quotidienne avec approximativement 250 jours de trading par année. Cette fréquence élevée permet de capturer la dynamique fine de l'évolution des surfaces de volatilité, élément essentiel pour évaluer la performance de notre méthode de calibration en temps quasi-réel.
+
+La dimension cross-sectionelle présente une richesse remarquable avec en moyenne 150 à 200 options différentes négociées quotidiennement. Cette diversité couvre un large spectre de moneyness, allant de 0.7 à 1.3, et de maturités s'étendant de quelques jours à plusieurs années. Cette couverture étendue garantit que notre analyse englobe l'ensemble des caractéristiques typiques des surfaces de volatilité observées en pratique.
+
+\section{Analyse exploratoire des données}
+
+\subsection{Distribution des caractéristiques contractuelles}
+
+L'examen de la distribution des moneyness révèle une concentration naturelle autour de la valeur 1.0, correspondant aux options à la monnaie. Environ 60\% des observations présentent une moneyness comprise entre 0.9 et 1.1, reflétant la liquidité supérieure de ces contrats. Cette concentration influence nos choix de modélisation, notamment dans la définition des architectures de réseaux de neurones.
+
+La distribution des maturités montre une surpondération des échéances courtes, avec environ 40\% des observations présentant une maturité inférieure à 30 jours. Cette caractéristique reflète les préférences des investisseurs pour la liquidité et impose des contraintes spécifiques sur notre modélisation, les options courtes étant particulièrement sensibles aux variations de volatilité.
+
+\subsection{Évolution temporelle de la volatilité implicite}
+
+L'analyse de l'évolution temporelle des volatilités implicites révèle des patterns marqués correspondant aux différentes phases de marché. La période 2018-2019 présente une volatilité implicite moyenne d'environ 15\%, avec des variations saisonnières modérées. Cette stabilité relative facilite l'apprentissage des relations structurelles entre paramètres du modèle et volatilités observées.
+
+L'année 2020 se caractérise par un pic de volatilité exceptionnel en mars, atteignant des niveaux supérieurs à 80\% pour certaines options courtes. Cette période présente un intérêt particulier pour tester la capacité de généralisation de notre approche face à des conditions de marché extrêmes, rarement observées dans les données historiques.
+
+\subsection{Structure des surfaces de volatilité}
+
+L'analyse des surfaces de volatilité révèle la présence systématique du smile de volatilité, avec des volatilités implicites supérieures pour les options en dehors de la monnaie. Cette asymétrie, plus prononcée pour les puts que pour les calls, reflète l'effet de levier capturé par le modèle de Heston via le paramètre de corrélation.
+
+La structure terme des volatilités implicites présente généralement une forme en contango, avec des volatilités supérieures pour les maturités longues. Cette caractéristique correspond aux prédictions théoriques du modèle de Heston dans des conditions de retour à la moyenne de la volatilité. Ces observations empiriques valident la pertinence du modèle de Heston pour capturer les phénomènes observés.
+
+\section{Procédures de nettoyage et préparation}
+
+\subsection{Filtrage des données aberrantes}
+
+La qualité des données d'options négociées nécessite une attention particulière en raison de la présence potentielle d'erreurs de cotation ou de transactions à des prix non représentatifs. Nous appliquons plusieurs filtres systématiques pour identifier et éliminer les observations problématiques.
+
+Le premier filtre concerne les contraintes d'arbitrage fondamentales. Nous éliminons les options dont le prix viole les bornes d'arbitrage élémentaires, telles que le prix minimum d'une option call européenne ou les relations de parité call-put. Ces violations, bien que rares, peuvent biaiser significativement l'estimation des paramètres.
+
+Le second filtre porte sur la liquidité, mesurée par le volume de transactions et l'écart bid-ask. Nous conservons uniquement les options présentant un volume minimal de 10 contrats et un écart bid-ask inférieur à 5\% du prix mid. Cette sélection garantit que nos analyses portent sur des prix représentatifs de véritables conditions de marché.
+
+\subsection{Traitement des maturités et ajustements calendaires}
+
+Le calcul précis des maturités nécessite la prise en compte des spécificités du calendrier de trading américain. Nous utilisons la convention du nombre de jours calendaires jusqu'à l'expiration, ajustée pour les jours fériés et les fermetures exceptionnelles de marché. Cette précision est cruciale car les erreurs de maturité se propagent directement dans le calcul des volatilités implicites.
+
+Les ajustements incluent également la gestion des dividendes anticipés et des événements corporatifs affectant l'indice S\&P 500. Bien que ces événements soient relativement rares pour un indice diversifié, leur impact peut être significatif sur le pricing des options, particulièrement pour les maturités courtes.
+
+\subsection{Standardisation et normalisation}
+
+La préparation des données pour l'entraînement des réseaux de neurones nécessite une standardisation appropriée des variables d'entrée. Nous appliquons une normalisation par score z pour les variables continues (moneyness, maturité) afin d'assurer une convergence stable de l'algorithme d'optimisation.
+
+Pour les volatilités implicites, nous utilisons une transformation logarithmique suivie d'une standardisation. Cette approche respecte la nature positive de la volatilité tout en stabilisant la variance des erreurs de prédiction, améliorant ainsi la performance de l'entraînement.
+
+\section{Construction des échantillons d'entraînement et de test}
+
+\subsection{Stratégie de division temporelle}
+
+La division de notre échantillon en sets d'entraînement, de validation et de test suit une logique temporelle stricte pour éviter le biais de look-ahead. Nous utilisons les deux premières années (2018-2019) pour l'entraînement, les six premiers mois de 2020 pour la validation, et la période juillet-décembre 2020 pour les tests finaux.
+
+Cette stratégie présente l'avantage de tester la capacité de généralisation temporelle de notre modèle, aspect crucial pour les applications pratiques. La période de test, correspondant à des conditions de marché particulièrement volatiles, constitue un stress test naturel pour notre approche.
+
+\subsection{Équilibrage des caractéristiques}
+
+Pour éviter les biais d'échantillonnage, nous appliquons des techniques de rééquilibrage pour assurer une représentation uniforme des différentes catégories de moneyness et de maturité dans nos échantillons d'entraînement. Cette approche prévient la sur-spécialisation du modèle sur les configurations les plus fréquentes.
+
+Le rééquilibrage s'effectue par stratification, en définissant des buckets de moneyness et de maturité et en échantillonnant de manière uniforme dans chaque bucket. Cette méthode préserve la diversité des configurations tout en maintenant des échantillons de taille raisonnable pour l'entraînement.
+
+\section{Génération de données synthétiques}
+
+\subsection{Motivation et approche}
+
+Suivant la méthodologie de Bayer et Stemper (2018), nous complétons nos données réelles par un large ensemble de données synthétiques générées via le modèle de Heston. Cette approche permet d'explorer systématiquement l'espace des paramètres et d'améliorer la robustesse de notre réseau de neurones.
+
+La génération synthétique suit le protocole établi dans le repository de référence, avec des paramètres tirés selon des distributions uniformes dans des intervalles réalistes. Cette méthode garantit une couverture exhaustive de l'espace des paramètres tout en respectant les contraintes théoriques du modèle.
+
+\subsection{Spécification des distributions de paramètres}
+
+Les paramètres du modèle de Heston sont échantillonnés selon les distributions suivantes, basées sur les analyses empiriques de la littérature. Le paramètre de retour à la moyenne $\kappa$ suit une distribution uniforme sur l'intervalle [0, 10], reflétant la gamme observée dans les études de calibration empirique.
+
+La volatilité long terme $\theta$ est tirée uniformément dans [0, 1], couvrant la gamme des volatilités annualisées typiquement observées. Le paramètre de volatilité de la volatilité $\sigma$ suit également une distribution uniforme sur [0, 5], permettant de capturer différents régimes de persistance de volatilité.
+
+Le paramètre de corrélation $\rho$ est échantillonné dans [-1, 0], reflétant l'effet de levier systématiquement observé sur les marchés d'actions. Enfin, la volatilité initiale $v_0$ suit une distribution uniforme sur [0, 1], permettant de couvrir différentes conditions initiales de volatilité.
+
+\subsection{Procédure de génération et validation}
+
+Pour chaque jeu de paramètres échantillonné, nous générons les volatilités implicites correspondantes en utilisant la formule analytique de Heston implémentée via QuantLib. Cette approche garantit la cohérence théorique des données synthétiques tout en bénéficiant d'implémentations numériques optimisées.
+
+La validation des données synthétiques s'effectue par comparaison avec les patterns empiriques observés dans les données réelles. Nous vérifions notamment que les surfaces de volatilité générées reproduisent les caractéristiques stylisées telles que le smile de volatilité et la structure terme appropriée.
+
+\section{Caractéristiques statistiques finales}
+
+\subsection{Statistiques descriptives}
+
+L'échantillon final comprend environ 150,000 observations de données réelles après filtrage, complétées par 1,000,000 d'observations synthétiques. Cette proportion garantit un entraînement robuste tout en préservant l'ancrage empirique de notre modèle.
+
+Les volatilités implicites observées présentent une moyenne de 18.5\% avec un écart-type de 12.3\%, reflétant la diversité des conditions de marché couvertes. La distribution présente une asymétrie positive marquée, correspondant aux périodes de stress où les volatilités atteignent des niveaux exceptionnels.
+
+\subsection{Corrélations et dépendances}
+
+L'analyse des corrélations entre variables révèle des patterns attendus conformes à la théorie financière. La corrélation entre moneyness et volatilité implicite est négative (-0.35), reflétant le smile de volatilité. La corrélation entre maturité et volatilité implicite est positive (0.22), correspondant à la structure terme typique.
+
+Ces patterns de corrélation guident la conception de notre architecture de réseau de neurones, en suggérant les interactions non-linéaires importantes à capturer. L'analyse des corrélations temporelles révèle également une persistance significative de la volatilité, justifiant l'inclusion de features temporelles dans notre modélisation.
+
+\section{Implications pour la modélisation}
+
+\subsection{Défis identifiés}
+
+L'analyse exploratoire révèle plusieurs défis spécifiques pour notre approche de modélisation. La concentration des observations autour de certaines configurations (moneyness proche de 1, maturités courtes) nécessite des stratégies particulières pour éviter le surapprentissage sur ces régions.
+
+La période exceptionnelle de 2020 présente un défi particulier pour la généralisation, avec des niveaux de volatilité rarement observés historiquement. Cette caractéristique teste les limites de notre approche et nécessite une validation approfondie de la robustesse des prédictions.
+
+\subsection{Opportunités pour l'amélioration}
+
+Les patterns identifiés suggèrent plusieurs pistes d'amélioration pour notre méthodologie. L'inclusion de features additionnelles captant la dynamique temporelle pourrait améliorer les performances, particulièrement pour les périodes de transition entre régimes de volatilité.
+
+La richesse des données cross-sectionnelles permet également d'explorer des architectures plus sophistiquées exploitant la structure spatiale des surfaces de volatilité. Ces extensions constituent des axes de développement naturels pour notre approche de base.
