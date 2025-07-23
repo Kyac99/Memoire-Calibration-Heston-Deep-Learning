@@ -1,0 +1,94 @@
+# Fichiers de compilation LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.loa
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*.bcf
+
+# Fichiers de sauvegarde
+*~
+*.backup
+*.bak
+*.swp
+*.tmp
+
+# Fichiers de cache d'éditeur
+.vscode/
+.idea/
+*.sublime-*
+
+# Dossiers temporaires
+/tmp/
+/temp/
+
+# Fichiers macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Fichiers Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Archives et compressions
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Dossiers de build
+/build/
+/dist/
+/submission/
+
+# Fichiers Python (si code d'implémentation ajouté)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Données sensibles
+*.csv
+*.xlsx
+*.json
+/data/
+/datasets/
+
+# Modèles entraînés
+*.pkl
+*.pth
+*.h5
+*.model
+
+# Logs d'entraînement
+/logs/
+/tensorboard/
+wandb/
+
+# Configuration locale
+config.local.*
+secrets.*
+
+# Fichiers de test
+/test_output/
