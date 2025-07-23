@@ -59,6 +59,8 @@ Le mémoire est organisé en 6 chapitres principaux (70-80 pages) :
 
 ```
 ├── memoire_principal.tex        # Document principal
+├── resume.tex                   # Résumé en français
+├── abstract.tex                 # Abstract en anglais
 ├── introduction.tex             # Chapitre 1
 ├── revue_litterature.tex       # Chapitre 2
 ├── presentation_donnees.tex    # Chapitre 3
@@ -66,19 +68,48 @@ Le mémoire est organisé en 6 chapitres principaux (70-80 pages) :
 ├── resultats_discussions.tex   # Chapitre 5
 ├── conclusions.tex             # Chapitre 6
 ├── annexes.tex                 # Annexes
-├── references.bib              # Bibliographie
-└── README.md                   # Documentation
+├── references.bib              # Bibliographie (90 références)
+├── Makefile                    # Automatisation compilation
+├── .gitignore                  # Fichiers ignorés
+├── LICENSE                     # Licence MIT
+├── README.md                   # Documentation
+└── GETTING_STARTED.md          # Guide d'utilisation
 ```
 
 ## 🛠️ Compilation LaTeX
 
+### Méthode recommandée (Makefile)
 ```bash
 # Compilation complète
+make
+
+# Compilation rapide
+make quick
+
+# Compilation continue
+make watch
+
+# Nettoyage
+make clean
+```
+
+### Méthode manuelle
+```bash
 pdflatex memoire_principal.tex
 bibtex memoire_principal
 pdflatex memoire_principal.tex
 pdflatex memoire_principal.tex
 ```
+
+## 📊 Composition de la bibliographie
+
+La bibliographie comprend 90 références réparties comme suit :
+- **Articles publiés** : 34 références (journaux à comité de lecture)
+- **Articles non publiés** : 15 références (preprints, working papers)
+- **Actes de conférence** : 12 références (NeurIPS, ICML, etc.)
+- **Revues professionnelles** : 4 références (Risk, Wilmott)
+- **Livres** : 2 références
+- **Autres publications** : 23 références
 
 ## 🔗 Références principales
 
@@ -93,11 +124,41 @@ Cette recherche s'appuie sur :
 - ✅ Extension aux options SPX Weekly
 - ✅ Framework de calibration hybride
 - ✅ Benchmarks reproductibles
+- ✅ Accélération 11x démontrée
+- ✅ Amélioration précision 12.5%
+
+## 🎓 Utilisation académique
+
+### Pour compilation
+```bash
+git clone https://github.com/Kyac99/Memoire-Calibration-Heston-Deep-Learning.git
+cd Memoire-Calibration-Heston-Deep-Learning
+make
+```
+
+### Pour personnalisation
+1. Modifier `memoire_principal.tex` (métadonnées)
+2. Adapter `resume.tex` et `abstract.tex` si nécessaire
+3. Recompiler avec `make`
 
 ## 📞 Contact
 
 **Auteur :** Pêgdwendé Yacouba KONSEIGA  
 **GitHub :** [@Kyac99](https://github.com/Kyac99)
+
+## 📄 Citation
+
+```bibtex
+@mastersthesis{konseiga2025calibration,
+  title={Calibration accélérée du modèle de Heston par Deep Learning : 
+         conception, implémentation et benchmarks sur données SPX Weekly},
+  author={Konseiga, Pêgdwendé Yacouba},
+  year={2025},
+  school={[Nom de l'université]},
+  type={Mémoire de Master en Finance Quantitative},
+  url={https://github.com/Kyac99/Memoire-Calibration-Heston-Deep-Learning}
+}
+```
 
 ---
 
